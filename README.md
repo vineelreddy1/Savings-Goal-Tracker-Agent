@@ -12,15 +12,17 @@ Build an AI agent that:
 3. **Delegates arithmetic and date math to Python**, ensuring exact mathematical accuracy without LLM calculation errors.
 4. **Maintains persistent cross-turn memory** across multiple savings deposits and conversational turns.
 5. **Provides visible agent execution traces** (`[USER]`, `[AGENT PLAN]`, `[TOOL CALL]`, `[TOOL RESULT]`, `[MEMORY]`, `[AGENT DECISION]`, `[FINAL ANSWER]`).
+6. **Features a Modern Web Interface**: Interactive glassmorphism dashboard with real-time metrics cards, progress bar, and execution trace drawer.
 
 ---
 
 ## Features
 
+- **Web Dashboard & REST API**: Interactive Flask web interface with real-time updates and trace drawer.
 - **Deterministic Financial Math**: Remaining amount, percentage completion (capped at 100%), time metrics (days, weeks, months), and required monthly saving rates are computed in pure Python.
 - **Pace & On-Track Evaluation**: Evaluates expected progress against actual progress using elapsed timeline ratios and tolerance thresholds (`NOT_STARTED`, `BEHIND`, `ON_TRACK`, `GOAL_REACHED`).
 - **Multiple Deposit Logging**: Accumulates savings deposits over time while recording timestamped entries (`{"amount": 5000, "date": "2026-01-05"}`).
-- **Robust Input Validation**: Rejects invalid targets ($\le 0$), negative deposit amounts, past deadlines, and improper date formats without crashing.
+- **Robust Input Validation**: Rejects invalid targets (<= 0), negative deposit amounts, past deadlines, and improper date formats without crashing.
 - **Keyless & Offline Reliability**: Includes an LLM-first intent analyzer backed by a deterministic regex parser fallback, allowing tests and notebooks to execute 100% reliably anywhere.
 
 ---
@@ -142,12 +144,80 @@ To prevent LLM hallucination and arithmetic errors:
 
 ---
 
+## Installation & Setup
+
+### 1. Install Dependencies
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+## How to Run
+
+### Option 1: Run Web Interface (Flask Dashboard) 🌐
+
+Start the web application server:
+
+```bash
+# Standard Python command:
+python app.py
+
+# Or Windows Python Launcher (if multiple Python versions installed):
+py app.py
+```
+
+Then open your browser and navigate to:
+👉 **`http://localhost:5000`**
+
+#### Web Interface Features:
+- **Metrics Cards**: Real-time updates for Target Goal, Total Saved, Remaining Balance, and Required Monthly Pace.
+- **Progress Bar**: Visual progress indicator with status badges (`ON_TRACK`, `BEHIND`, `GOAL_REACHED`).
+- **Interactive Chat**: Natural language interface with quick suggestion chips.
+- **Visible Execution Trace**: Expandable drawer displaying live agent plans, tool calls, and memory logs.
+
+---
+
+### Option 2: Run CLI Demo Runner Script 🖥️
+
+To run all 6 interaction scenarios sequentially in your terminal:
+
+```bash
+py notebook/demo_runner.py
+# or
+python notebook/demo_runner.py
+```
+
+---
+
+### Option 3: Run Automated Test Suite 🧪
+
+To run all 25 unit and web API integration tests:
+
+```bash
+py -m pytest tests/ -v
+# or
+pytest tests/ -v
+```
+
+---
+
+### Option 4: Run Jupyter Notebook Demo 📓
+
+To run the interactive Jupyter Notebook demonstration:
+
+```bash
+jupyter notebook notebook/savings_goal_demo.ipynb
+```
+
+---
+
 ## Error Handling & Validation
 
-- **Invalid Target**: Rejects $\le 0$ targets with explanatory messages.
+- **Invalid Target**: Rejects <= 0 targets with explanatory messages.
 - **Invalid / Past Deadline**: Validates format (`YYYY-MM-DD`, `Month Year`) and ensures deadline is not in the past relative to reference date.
 - **Missing Goal**: Prevents logging savings when no active goal exists.
-- **Invalid Saving Amount**: Rejects amounts $\le 0$.
+- **Invalid Saving Amount**: Rejects amounts <= 0.
 - **Underspecified Input**: Prompts user for missing targets or deadlines.
 
 ---
@@ -159,60 +229,6 @@ During initial testing of intent parsing, queries like *"How much have I saved?"
 
 **Fix Applied**:
 Re-structured the intent evaluation sequence in `agent.py` so that progress and remaining queries (`CHECK_PROGRESS`, `CHECK_REMAINING`) are evaluated *prior* to deposit logging logic. This ensured that question queries containing the past-tense word `"saved"` correctly route to `get_goal_progress()` instead of asking for deposit amounts.
-
----
-
-## Installation & Running
-
-### Installation
-```bash
-cd savings-goal-agent
-pip install -r requirements.txt
-```
-
-### Running Test Suite
-```bash
-pytest tests/ -v
-```
-
-### Running Demo Runner Script
-```bash
-python notebook/demo_runner.py
-```
-
-### Running Jupyter Notebook Demo
-```bash
-jupyter notebook notebook/savings_goal_demo.ipynb
-```
-
----
-
-## Example Interaction
-
-```text
-[USER]
-I want to save ₹60,000 by December.
-
-[AGENT PLAN]
-Create savings goal with target 60000.0 and deadline 'December'.
-
-[TOOL CALL]
-create_savings_goal(target_amount=60000.0, deadline='December')
-
-[TOOL RESULT]
-{
-  "success": true,
-  "target": 60000.0,
-  "deadline": "2026-12-31",
-  "required_monthly_saving": 4599.07
-}
-
-[AGENT DECISION]
-Savings goal stored in memory. Retrieving initial monthly pace.
-
-[FINAL ANSWER]
-✅ Your savings goal of ₹60,000 by 2026-12-31 has been created! To stay on track, you'll need to save approximately ₹4,599.07 per month.
-```
 
 ---
 
