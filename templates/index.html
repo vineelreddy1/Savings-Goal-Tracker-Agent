@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Savings Goal Tracker Agent</title>
+    <!-- Google Fonts & FontAwesome -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="app-wrapper">
+        <!-- Top Navigation -->
+        <header class="navbar">
+            <div class="brand">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-piggy-bank"></i>
+                </div>
+                <div class="brand-text">
+                    <h1>Savings Goal Agent</h1>
+                    <span class="subtext">Deterministic AI Financial Companion</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <div id="status-badge" class="status-pill status-not_started">
+                    <i class="fa-solid fa-circle-dot"></i>
+                    <span id="status-text">NOT STARTED</span>
+                </div>
+                <button id="reset-btn" class="btn-secondary" title="Reset Goal Memory">
+                    <i class="fa-solid fa-rotate-right"></i> Reset
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="dashboard-grid">
+            <!-- Left Side: Dashboard Stats & Progress -->
+            <section class="stats-panel">
+                <div class="section-header">
+                    <h2><i class="fa-solid fa-chart-pie"></i> Goal Overview</h2>
+                    <span class="badge-tag" id="deadline-tag">No Deadline Set</span>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="metrics-grid">
+                    <div class="metric-card card-target">
+                        <div class="card-icon"><i class="fa-solid fa-bullseye"></i></div>
+                        <div class="card-info">
+                            <span class="label">Target Goal</span>
+                            <h3 id="stat-target">₹0</h3>
+                        </div>
+                    </div>
+
+                    <div class="metric-card card-saved">
+                        <div class="card-icon"><i class="fa-solid fa-vault"></i></div>
+                        <div class="card-info">
+                            <span class="label">Total Saved</span>
+                            <h3 id="stat-saved">₹0</h3>
+                        </div>
+                    </div>
+
+                    <div class="metric-card card-remaining">
+                        <div class="card-icon"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+                        <div class="card-info">
+                            <span class="label">Remaining Needed</span>
+                            <h3 id="stat-remaining">₹0</h3>
+                        </div>
+                    </div>
+
+                    <div class="metric-card card-pace">
+                        <div class="card-icon"><i class="fa-solid fa-calendar-check"></i></div>
+                        <div class="card-info">
+                            <span class="label">Required Monthly</span>
+                            <h3 id="stat-monthly">₹0 / mo</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progress Bar Card -->
+                <div class="progress-card">
+                    <div class="progress-header">
+                        <span class="progress-title">Savings Completion</span>
+                        <span class="progress-percentage" id="progress-percentage">0.0%</span>
+                    </div>
+                    <div class="progress-track">
+                        <div class="progress-fill" id="progress-bar" style="width: 0%;"></div>
+                    </div>
+                    <p class="recommendation-box" id="recommendation-text">
+                        <i class="fa-solid fa-lightbulb"></i> Configure your savings target to start tracking progress.
+                    </p>
+                </div>
+
+                <!-- Execution Trace Drawer -->
+                <div class="trace-panel">
+                    <div class="trace-header" id="trace-toggle">
+                        <h3><i class="fa-solid fa-terminal"></i> Visible Execution Trace</h3>
+                        <i class="fa-solid fa-chevron-down toggle-icon" id="trace-chevron"></i>
+                    </div>
+                    <div class="trace-body" id="trace-body">
+                        <pre id="trace-content" class="trace-log">No execution trace recorded yet.</pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Side: Interactive Agent Chat -->
+            <section class="chat-panel">
+                <div class="chat-header">
+                    <h2><i class="fa-solid fa-comments"></i> Conversational Agent</h2>
+                    <span class="online-indicator"><span class="dot"></span> Online</span>
+                </div>
+
+                <!-- Suggestion Chips -->
+                <div class="chips-container">
+                    <button class="chip" onclick="sendQuickMessage('I want to save ₹60,000 by December.')">
+                        🎯 Save ₹60,000 by Dec
+                    </button>
+                    <button class="chip" onclick="sendQuickMessage('I saved ₹5,000.')">
+                        💰 Saved ₹5,000
+                    </button>
+                    <button class="chip" onclick="sendQuickMessage('How much have I saved?')">
+                        📊 Check Progress
+                    </button>
+                    <button class="chip" onclick="sendQuickMessage('How much more do I need?')">
+                        ❓ Remaining Needed
+                    </button>
+                </div>
+
+                <!-- Messages Stream -->
+                <div class="chat-messages" id="chat-messages">
+                    <div class="message message-agent">
+                        <div class="message-avatar"><i class="fa-solid fa-robot"></i></div>
+                        <div class="message-content">
+                            <p>Hello! I am your <strong>Savings Goal Tracker Agent</strong>. I can help you create a savings goal, log your savings entries, and track whether you're on target to hit your deadline.</p>
+                            <p>How much would you like to save?</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Input Controls -->
+                <div class="chat-input-area">
+                    <form id="chat-form" class="chat-form">
+                        <input type="text" id="user-input" placeholder="Type a message (e.g. 'I saved ₹5,000')..." autocomplete="off" required>
+                        <button type="submit" class="btn-send">
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </button>
+                    </form>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
